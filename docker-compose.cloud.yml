@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+    container_name: spring-boot-template-cloud
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=cloud
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_LOGS_GROUP=${AWS_LOGS_GROUP:-/aws/ec2/spring-boot-template}
+      - AWS_LOGS_STREAM=${AWS_LOGS_STREAM:-${HOSTNAME}-${PID}}
+      - SERVER_PORT=8080
+      - JAVA_OPTS=-Djava.security.egd=file:/dev/./urandom -Xms512m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+    volumes:
+      - cloud_app_logs:/var/log/application
+      - /tmp:/tmp
+    networks:
+      - cloud-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "awslogs"
+      options:
+        awslogs-group: "/docker/spring-boot-template"
+        awslogs-region: "${AWS_REGION:-us-east-1}"
+        awslogs-stream-prefix: "app"
+        awslogs-create-group: "true"
+
+volumes:
+  cloud_app_logs:
+    driver: local
+
+networks:
+  cloud-network:
+    driver: bridge

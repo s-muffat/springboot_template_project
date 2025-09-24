@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="APP_NAME">spring-boot-template</Property>
+        <Property name="LOG_GROUP">/aws/ec2/${APP_NAME}</Property>
+        <Property name="LOG_STREAM">${hostName}-${sys:PID}</Property>
+        <Property name="AWS_REGION">${env:AWS_REGION:-us-east-1}</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- Console Appender with JSON layout for structured logging -->
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json"/>
+        </Console>
+
+        <!-- CloudWatch Logs Appender -->
+        <CloudWatchLogsAppender name="CloudWatchAppender"
+                               logGroupName="${LOG_GROUP}"
+                               logStreamName="${LOG_STREAM}"
+                               region="${AWS_REGION}"
+                               createLogGroupIfNeeded="true"
+                               createLogStreamIfNeeded="true">
+            <JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json"/>
+        </CloudWatchLogsAppender>
+
+        <!-- Fallback File Appender (in case CloudWatch is unavailable) -->
+        <RollingFile name="FallbackFileAppender"
+                     fileName="/var/log/application/app.log"
+                     filePattern="/var/log/application/app-%d{yyyy-MM-dd}-%i.log.gz"
+                     ignoreExceptions="false">
+            <JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5"/>
+        </RollingFile>
+
+        <!-- Async wrappers for better performance -->
+        <Async name="AsyncConsole" bufferSize="2048">
+            <AppenderRef ref="ConsoleAppender"/>
+        </Async>
+
+        <Async name="AsyncCloudWatch" bufferSize="2048">
+            <AppenderRef ref="CloudWatchAppender"/>
+        </Async>
+
+        <Async name="AsyncFallbackFile" bufferSize="512">
+            <AppenderRef ref="FallbackFileAppender"/>
+        </Async>
+    </Appenders>
+
+    <Loggers>
+        <!-- Application specific loggers -->
+        <Logger name="com.example.template" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncCloudWatch"/>
+            <AppenderRef ref="AsyncFallbackFile"/>
+        </Logger>
+
+        <!-- Spring Framework loggers -->
+        <Logger name="org.springframework.boot" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncCloudWatch"/>
+        </Logger>
+
+        <Logger name="org.springframework.web" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncCloudWatch"/>
+        </Logger>
+
+
+        <!-- Security loggers -->
+        <Logger name="org.springframework.security" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncCloudWatch"/>
+        </Logger>
+
+        <!-- AWS SDK loggers (reduce noise) -->
+        <Logger name="software.amazon.awssdk" level="WARN" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+
+        <!-- CloudWatch appender logger (reduce noise) -->
+        <Logger name="io.github.dibog" level="WARN" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+
+        <!-- Reduce noise from common libraries -->
+        <Logger name="org.apache.catalina" level="ERROR" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+
+        <Logger name="org.hibernate.validator" level="ERROR" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+
+        <Logger name="org.apache.http" level="WARN" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+
+        <!-- Root logger -->
+        <Root level="INFO">
+            <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncCloudWatch"/>
+            <AppenderRef ref="AsyncFallbackFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-boot-template-dev
+    ports:
+      - "8080:8080"
+      - "5005:5005"  # Debug port
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+    volumes:
+      - ./logs:/app/logs
+      - dev_app_logs:/var/log/application
+      - ./src:/app/src:ro  # Mount source for hot reload (if using devtools)
+    networks:
+      - dev-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  dev_app_logs:
+    driver: local
+
+networks:
+  dev-network:
+    driver: bridge

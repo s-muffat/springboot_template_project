@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_PATTERN">
+            %d{HH:mm:ss.SSS} [%t] %highlight{%-5level} %logger{36} - %msg%n
+        </Property>
+        <Property name="APP_NAME">spring-boot-template</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- Console Appender for local development -->
+        <Console name="ConsoleAppender" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- File Appender for local development -->
+        <RollingFile name="FileAppender"
+                     fileName="logs/application.log"
+                     filePattern="logs/application-%d{yyyy-MM-dd}-%i.log.gz"
+                     ignoreExceptions="false">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+
+        <!-- Async wrapper for better performance -->
+        <Async name="AsyncConsole">
+            <AppenderRef ref="ConsoleAppender"/>
+        </Async>
+
+        <Async name="AsyncFile">
+            <AppenderRef ref="FileAppender"/>
+        </Async>
+    </Appenders>
+
+    <Loggers>
+        <!-- Application specific loggers -->
+        <Logger name="com.example.template" level="DEBUG" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncFile"/>
+        </Logger>
+
+        <!-- Spring Framework loggers -->
+        <Logger name="org.springframework.boot" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+
+        <Logger name="org.springframework.web" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+
+
+        <!-- HTTP client loggers -->
+        <Logger name="org.apache.http" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+
+        <!-- Security loggers -->
+        <Logger name="org.springframework.security" level="INFO" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncFile"/>
+        </Logger>
+
+        <!-- Reduce noise from common libraries -->
+        <Logger name="org.apache.catalina" level="WARN" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+
+        <Logger name="org.hibernate.validator" level="WARN" additivity="false">
+            <AppenderRef ref="AsyncConsole"/>
+        </Logger>
+
+        <!-- Root logger -->
+        <Root level="INFO">
+            <AppenderRef ref="AsyncConsole"/>
+            <AppenderRef ref="AsyncFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

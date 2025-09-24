@@ -1,0 +1,64 @@
+# Multi-stage build for Spring Boot application - Cloud optimized
+FROM maven:3.9.6-openjdk-21-slim AS build
+
+# Set working directory
+WORKDIR /app
+
+# Copy pom.xml and download dependencies (for better caching)
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copy source code and build the application
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# Runtime stage - Cloud optimized
+FROM amazoncorretto:21
+
+# Install necessary packages for cloud deployment
+RUN apt-get update && \
+    apt-get install -y curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Create directories for logging
+RUN mkdir -p /var/log/application && \
+    mkdir -p /app/logs && \
+    chown -R appuser:appuser /var/log/application && \
+    chown -R appuser:appuser /app/logs
+
+# Set working directory
+WORKDIR /app
+
+# Copy the built jar from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Change ownership to appuser
+RUN chown appuser:appuser app.jar
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 8080
+
+# Environment variables for cloud deployment
+ENV SPRING_PROFILES_ACTIVE=cloud
+ENV AWS_REGION=us-east-1
+ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom \
+    -Xms512m \
+    -Xmx1024m \
+    -XX:+UseG1GC \
+    -XX:MaxGCPauseMillis=200 \
+    -XX:+HeapDumpOnOutOfMemoryError \
+    -XX:HeapDumpPath=/var/log/application/heap-dump.hprof \
+    -Dcom.amazonaws.sdk.disableEc2Metadata=false"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# Run the application with cloud-optimized JVM settings
+ENTRYPOINT exec java $JAVA_OPTS -jar app.jar

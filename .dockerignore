@@ -1,0 +1,61 @@
+# Git
+.git
+.gitignore
+
+# Build outputs
+target/
+*.jar
+*.war
+*.ear
+*.class
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.log
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Documentation
+README.md
+*.md
+
+# GitHub Actions
+.github/
+
+# Maven wrapper (optional - remove if you want to include it)
+.mvn/
+mvnw
+mvnw.cmd
+
+# Application logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Test outputs
+test-results/
+coverage/
+
+# Node modules (if any frontend assets)
+node_modules/
+npm-debug.log*

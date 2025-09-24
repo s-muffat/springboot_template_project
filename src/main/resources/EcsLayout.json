@@ -1,0 +1,60 @@
+{
+  "timestamp": {
+    "$resolver": "timestamp",
+    "pattern": {
+      "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZZZ",
+      "timeZone": "UTC"
+    }
+  },
+  "level": {
+    "$resolver": "level",
+    "field": "name"
+  },
+  "logger": {
+    "$resolver": "logger",
+    "field": "name"
+  },
+  "message": {
+    "$resolver": "message",
+    "stringified": true
+  },
+  "thread": {
+    "$resolver": "thread",
+    "field": "name"
+  },
+  "hostname": "${hostName}",
+  "application": "${sys:spring.application.name:-spring-boot-template}",
+  "version": "${sys:application.version:-unknown}",
+  "environment": "${sys:spring.profiles.active:-default}",
+  "pid": "${sys:PID}",
+  "mdc": {
+    "$resolver": "mdc"
+  },
+  "exception": {
+    "$resolver": "exception",
+    "field": "stackTrace"
+  },
+  "source": {
+    "class": {
+      "$resolver": "source",
+      "field": "className"
+    },
+    "method": {
+      "$resolver": "source",
+      "field": "methodName"
+    },
+    "file": {
+      "$resolver": "source",
+      "field": "fileName"
+    },
+    "line": {
+      "$resolver": "source",
+      "field": "lineNumber"
+    }
+  },
+  "aws": {
+    "region": "${env:AWS_REGION:-unknown}",
+    "logGroup": "${env:AWS_LOGS_GROUP:-unknown}",
+    "logStream": "${env:AWS_LOGS_STREAM:-unknown}"
+  }
+}
