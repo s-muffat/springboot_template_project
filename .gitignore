@@ -1,0 +1,10 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# Claude AI
+.claude/
+
+# Other common Java/Spring Boot exclusions
+target/
