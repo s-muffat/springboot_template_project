@@ -8,3 +8,4 @@
 
 # Other common Java/Spring Boot exclusions
 target/
+logs/

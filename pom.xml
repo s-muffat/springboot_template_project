@@ -61,9 +61,9 @@
 
         <!-- AWS CloudWatch Appender -->
         <dependency>
-            <groupId>io.github.dibog</groupId>
-            <artifactId>cloudwatchlogs-java-appender</artifactId>
-            <version>1.2.0</version>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cloudwatchlogs</artifactId>
+            <version>2.20.26</version>
         </dependency>
 
         <!-- AWS SDK for CloudWatch -->
